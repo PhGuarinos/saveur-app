@@ -5,8 +5,8 @@ import {
   getDocs,
   updateDoc,
   deleteDoc,
-  doc,
- } from 'firebase/firestore';
+  doc
+} from 'firebase/firestore';
 import { db } from './config';
 
 const PRODUCTS_COLLECTION = 'products';
@@ -49,7 +49,8 @@ export const addProduct = async (product) => {
 
 export const updateProduct = async (productId, updatedProduct) => {
   try {
-    const productRef = doc(db, PRODUCTS_COLLECTION, productId);
+    const id = String(productId);
+    const productRef = doc(db, PRODUCTS_COLLECTION, id);
     await updateDoc(productRef, {
       name: updatedProduct.name,
       manufacturer: updatedProduct.manufacturer,
@@ -66,7 +67,8 @@ export const updateProduct = async (productId, updatedProduct) => {
 
 export const deleteProduct = async (productId) => {
   try {
-    const productRef = doc(db, PRODUCTS_COLLECTION, productId);
+    const id = String(productId);
+    const productRef = doc(db, PRODUCTS_COLLECTION, id);
     await deleteDoc(productRef);
   } catch (error) {
     console.error('Erreur lors de la suppression du produit:', error);
