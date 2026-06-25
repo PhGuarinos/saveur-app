@@ -226,23 +226,23 @@ function App() {
             >
               {showAddForm ? 'Annuler' : (editingProduct ? 'Annuler l\'édition' : 'Ajouter un produit')}
             </button>
+            {/* BOUTON IMPORTER CSV - TOUJOURS VISIBLE (PAS DE CONDITION) */}
+            <button 
+              className="import-button"
+              onClick={toggleImportForm}
+              type="button"
+            >
+              {showImportForm ? 'Annuler' : 'Importer CSV'}
+            </button>
+            {/* BOUTON SUPPRIMER TOUT - SEULEMENT SI PRODUITS */}
             {products.length > 0 && (
-              <>
-                <button 
-                  className="import-button"
-                  onClick={toggleImportForm}
-                  type="button"
-                >
-                  {showImportForm ? 'Annuler' : 'Importer CSV'}
-                </button>
-                <button 
-                  className="delete-all-button"
-                  onClick={handleDeleteAllProducts}
-                  type="button"
-                >
-                  Supprimer tout
-                </button>
-              </>
+              <button 
+                className="delete-all-button"
+                onClick={handleDeleteAllProducts}
+                type="button"
+              >
+                Supprimer tout
+              </button>
             )}
             <button 
               className="migrate-button"
