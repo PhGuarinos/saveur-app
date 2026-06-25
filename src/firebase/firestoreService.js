@@ -6,9 +6,7 @@ import {
   updateDoc,
   deleteDoc,
   doc,
-  query,
-  where
-} from 'firebase/firestore';
+ } from 'firebase/firestore';
 import { db } from './config';
 
 const PRODUCTS_COLLECTION = 'products';
