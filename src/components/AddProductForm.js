@@ -1,5 +1,7 @@
 // src/components/AddProductForm.js
 import React, { useState, useEffect } from 'react';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { storage } from '../firebase/config';
 import { cleanAndFormat } from '../utils/stringUtils';
 
 export default function AddProductForm({ onAddProduct, onUpdateProduct, productToEdit }) {
@@ -9,6 +11,8 @@ export default function AddProductForm({ onAddProduct, onUpdateProduct, productT
     flavors: '',
     image: ''
   });
+  const [uploading, setUploading] = useState(false);
+  const [imageFile, setImageFile] = useState(null);
 
   useEffect(() => {
     if (productToEdit) {
@@ -29,6 +33,39 @@ export default function AddProductForm({ onAddProduct, onUpdateProduct, productT
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleImageSelect = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      // Créer un nom unique pour l'image
+      const timestamp = Date.now();
+      const filename = `products/${timestamp}_${file.name}`;
+      
+      // Upload vers Firebase Storage
+      const storageRef = ref(storage, filename);
+      await uploadBytes(storageRef, file);
+      
+      // Récupérer l'URL de téléchargement
+      const downloadURL = await getDownloadURL(storageRef);
+      
+      // Mettre à jour le formulaire avec l'URL
+      setFormData(prev => ({
+        ...prev,
+        image: downloadURL
+      }));
+      
+      setImageFile(file);
+      alert('✅ Image uploadée avec succès !');
+    } catch (error) {
+      console.error('Erreur upload image:', error);
+      alert('❌ Erreur lors de l\'upload de l\'image');
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleSubmit = (e) => {
@@ -77,6 +114,7 @@ export default function AddProductForm({ onAddProduct, onUpdateProduct, productT
       flavors: '',
       image: ''
     });
+    setImageFile(null);
   };
 
   return (
@@ -125,21 +163,26 @@ export default function AddProductForm({ onAddProduct, onUpdateProduct, productT
         </div>
 
         <div className="form-group">
-          <label htmlFor="image">URL de l'image</label>
+          <label htmlFor="image-file">📸 Choisir une image *</label>
           <input
-            id="image"
-            type="text"
-            name="image"
-            value={formData.image}
-            onChange={handleChange}
-            placeholder="Ex: /images/product_1.jpg"
+            id="image-file"
+            type="file"
+            accept="image/*"
+            onChange={handleImageSelect}
+            disabled={uploading}
           />
-          <small>Laissez vide pour utiliser l'image par défaut</small>
+          {uploading && <small>⏳ Upload en cours...</small>}
+          {imageFile && <small>✅ Image sélectionnée: {imageFile.name}</small>}
+          {formData.image && !uploading && <small>✅ Image uploadée!</small>}
         </div>
 
         <div className="form-buttons">
-          <button type="submit" className="confirm-button">
-            {productToEdit ? 'Mettre à jour' : 'Ajouter'}
+          <button 
+            type="submit" 
+            className="confirm-button"
+            disabled={uploading}
+          >
+            {uploading ? '⏳ Upload...' : (productToEdit ? 'Mettre à jour' : 'Ajouter')}
           </button>
         </div>
       </form>
