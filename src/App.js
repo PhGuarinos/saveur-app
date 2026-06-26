@@ -49,15 +49,21 @@ function App() {
     ? products.filter(product => {
         const normalizedSearch = normalizeString(searchFlavor.toLowerCase());
         
+        // Recherche dans les saveurs
         const matchesFlavorSearch = product.flavors.some(flavor => {
           const normalizedFlavor = normalizeString(flavor.toLowerCase());
           return normalizedFlavor.includes(normalizedSearch);
         });
         
+        // Recherche dans le nom
         const normalizedName = normalizeString(product.name.toLowerCase());
         const matchesNameSearch = normalizedName.includes(normalizedSearch);
         
-        return matchesFlavorSearch || matchesNameSearch;
+        // NOUVEAU : Recherche dans le fabricant
+        const normalizedManufacturer = normalizeString(product.manufacturer.toLowerCase());
+        const matchesManufacturerSearch = normalizedManufacturer.includes(normalizedSearch);
+        
+        return matchesFlavorSearch || matchesNameSearch || matchesManufacturerSearch;
       })
     : products;
 
@@ -131,6 +137,9 @@ function App() {
       setEditingProduct(productToEdit);
       setShowAddForm(true);
       setShowImportForm(false);
+      
+      // NOUVEAU : Scroll automatiquement vers le haut
+      window.scrollTo(0, 0);
     }
   };
 
