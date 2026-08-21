@@ -1,13 +1,15 @@
 // src/App.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Header from './components/Header';
 import SearchBar from './components/SearchBar';
+import CategoryFilter from './components/CategoryFilter';
 import ProductList from './components/ProductList';
 import AddProductForm from './components/AddProductForm';
 import ImportCSVForm from './components/ImportCSVForm';
 import ImportExportData from './components/ImportExportData';
 import LoginModal from './components/LoginModal';
 import { normalizeString } from './utils/stringUtils';
+import { TOUS, A_COMPLETER, estACompleter } from './constants/categories';
 import './styles/styles.css';
 
 import {
@@ -22,6 +24,7 @@ import {
 function App() {
   const [products, setProducts] = useState([]);
   const [searchFlavor, setSearchFlavor] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(TOUS);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showImportForm, setShowImportForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
@@ -45,27 +48,38 @@ function App() {
     }
   };
 
-  const filteredProducts = searchFlavor 
-    ? products.filter(product => {
-        const normalizedSearch = normalizeString(searchFlavor.toLowerCase());
-        
-        // Recherche dans les saveurs
-        const matchesFlavorSearch = product.flavors.some(flavor => {
-          const normalizedFlavor = normalizeString(flavor.toLowerCase());
-          return normalizedFlavor.includes(normalizedSearch);
-        });
-        
-        // Recherche dans le nom
-        const normalizedName = normalizeString(product.name.toLowerCase());
-        const matchesNameSearch = normalizedName.includes(normalizedSearch);
-        
-        // NOUVEAU : Recherche dans le fabricant
-        const normalizedManufacturer = normalizeString(product.manufacturer.toLowerCase());
-        const matchesManufacturerSearch = normalizedManufacturer.includes(normalizedSearch);
-        
-        return matchesFlavorSearch || matchesNameSearch || matchesManufacturerSearch;
-      })
-    : products;
+  // ÉTAPE 1 : filtrage par la recherche texte (saveurs, nom, fabricant).
+  // Les accès aux champs sont sécurisés : un produit importé peut avoir
+  // un champ manquant, ce qui faisait planter la recherche avant.
+  const searchedProducts = useMemo(() => {
+    if (!searchFlavor) return products;
+
+    const normalizedSearch = normalizeString(searchFlavor.toLowerCase());
+
+    return products.filter((product) => {
+      const flavors = Array.isArray(product.flavors) ? product.flavors : [];
+      const matchesFlavorSearch = flavors.some((flavor) =>
+        normalizeString(String(flavor).toLowerCase()).includes(normalizedSearch)
+      );
+
+      const matchesNameSearch = normalizeString(
+        String(product.name || '').toLowerCase()
+      ).includes(normalizedSearch);
+
+      const matchesManufacturerSearch = normalizeString(
+        String(product.manufacturer || '').toLowerCase()
+      ).includes(normalizedSearch);
+
+      return matchesFlavorSearch || matchesNameSearch || matchesManufacturerSearch;
+    });
+  }, [products, searchFlavor]);
+
+  // ÉTAPE 2 : filtrage par catégorie, appliqué par-dessus la recherche.
+  const filteredProducts = useMemo(() => {
+    if (selectedCategory === TOUS) return searchedProducts;
+    if (selectedCategory === A_COMPLETER) return searchedProducts.filter(estACompleter);
+    return searchedProducts.filter((product) => product.category === selectedCategory);
+  }, [searchedProducts, selectedCategory]);
 
   const handleSearch = (flavor) => {
     setSearchFlavor(flavor);
@@ -88,14 +102,14 @@ function App() {
       setShowAddForm(false);
       return;
     }
-    
+
     try {
       await updateProduct(updatedProduct.id, updatedProduct);
-      
-      const updatedProducts = products.map(product => 
+
+      const updatedProducts = products.map(product =>
         product.id === updatedProduct.id ? updatedProduct : product
       );
-      
+
       setProducts(updatedProducts);
       setEditingProduct(null);
       setShowAddForm(false);
@@ -109,7 +123,7 @@ function App() {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) {
       try {
         await deleteProduct(productId);
-        
+
         const updatedProducts = products.filter(product => product.id !== productId);
         setProducts(updatedProducts);
       } catch (error) {
@@ -137,28 +151,29 @@ function App() {
       setEditingProduct(productToEdit);
       setShowAddForm(true);
       setShowImportForm(false);
-      
-      // NOUVEAU : Scroll automatiquement vers le haut
+
+      // Scroll automatiquement vers le haut
       window.scrollTo(0, 0);
     }
   };
 
   const handleImportProducts = async (importedProducts) => {
     if (!importedProducts || importedProducts.length === 0) return;
-    
+
     try {
       const addPromises = importedProducts.map(product => addProduct(product));
       const addedProducts = await Promise.all(addPromises);
-      
+
       alert(`${addedProducts.length} produits importés avec succès !`);
-      
+
       setShowImportForm(false);
       setSearchFlavor('');
-      
+      setSelectedCategory(TOUS);
+
       setTimeout(() => {
         loadProducts();
       }, 500);
-      
+
     } catch (error) {
       console.error('Erreur lors de l\'importation:', error);
       alert('Erreur lors de l\'importation des produits');
@@ -181,6 +196,7 @@ function App() {
     setShowImportForm(false);
     setEditingProduct(null);
     setSearchFlavor('');
+    setSelectedCategory(TOUS);
   };
 
   const handleMigrateData = async () => {
@@ -216,36 +232,42 @@ function App() {
   // Page principale
   return (
     <div className="app">
-      <Header 
+      <Header
         onReturnHome={showAddForm || showImportForm ? handleReturnHome : null}
         userRole={userRole}
         onLogout={() => setUserRole(null)}
       />
-      
+
       <div className="app-controls">
         <SearchBar onSearch={handleSearch} />
-        
+
+        {/* FILTRE PAR CATÉGORIE - VISIBLE POUR TOUS */}
+        <CategoryFilter
+          products={searchedProducts}
+          value={selectedCategory}
+          onChange={setSelectedCategory}
+          showToFill={userRole === 'admin'}
+        />
+
         {/* BOUTONS ADMIN SEULEMENT */}
         {userRole === 'admin' && (
           <div className="button-group">
-            <button 
+            <button
               className="add-button"
               onClick={toggleAddForm}
               type="button"
             >
               {showAddForm ? 'Annuler' : (editingProduct ? 'Annuler l\'édition' : 'Ajouter un produit')}
             </button>
-            {/* BOUTON IMPORTER CSV - TOUJOURS VISIBLE (PAS DE CONDITION) */}
-            <button 
+            <button
               className="import-button"
               onClick={toggleImportForm}
               type="button"
             >
               {showImportForm ? 'Annuler' : 'Importer CSV'}
             </button>
-            {/* BOUTON SUPPRIMER TOUT - SEULEMENT SI PRODUITS */}
             {products.length > 0 && (
-              <button 
+              <button
                 className="delete-all-button"
                 onClick={handleDeleteAllProducts}
                 type="button"
@@ -253,7 +275,7 @@ function App() {
                 Supprimer tout
               </button>
             )}
-            <button 
+            <button
               className="migrate-button"
               onClick={handleMigrateData}
               type="button"
@@ -264,31 +286,31 @@ function App() {
           </div>
         )}
       </div>
-      
+
       {/* IMPORT/EXPORT ADMIN SEULEMENT */}
       {userRole === 'admin' && (
-        <ImportExportData 
+        <ImportExportData
           products={products}
           onImport={handleImportProducts}
         />
       )}
-      
+
       {/* FORMULAIRES ADMIN SEULEMENT */}
       {userRole === 'admin' && showAddForm && (
-        <AddProductForm 
+        <AddProductForm
           onAddProduct={handleAddProduct}
           onUpdateProduct={handleUpdateProduct}
           productToEdit={editingProduct}
         />
       )}
-      
+
       {userRole === 'admin' && showImportForm && (
         <ImportCSVForm onImportProducts={handleImportProducts} />
       )}
-      
+
       {/* LISTE PRODUITS VISIBLE POUR TOUS */}
-      <ProductList 
-        products={filteredProducts} 
+      <ProductList
+        products={filteredProducts}
         onDeleteProduct={userRole === 'admin' ? handleDeleteProduct : null}
         onEditProduct={userRole === 'admin' ? handleEditProduct : null}
         searchTerm={searchFlavor}
