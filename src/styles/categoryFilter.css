@@ -1,0 +1,67 @@
+/* src/styles/categoryFilter.css */
+
+.category-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.category-filter__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid #d0d5dd;
+  border-radius: 999px;
+  background: #fff;
+  color: #344054;
+  font-size: 0.95rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.category-filter__item:hover {
+  background: #f2f4f7;
+}
+
+.category-filter__item:focus-visible {
+  outline: 2px solid #1f6feb;
+  outline-offset: 2px;
+}
+
+.category-filter__item--active {
+  background: #1f6feb;
+  border-color: #1f6feb;
+  color: #fff;
+}
+
+.category-filter__item--active:hover {
+  background: #1a5fd0;
+}
+
+/* Le filtre "À compléter" est un outil de travail, pas une catégorie :
+   on le distingue visuellement du reste. */
+.category-filter__item--todo {
+  border-style: dashed;
+  color: #b54708;
+}
+
+.category-filter__item--todo.category-filter__item--active {
+  background: #b54708;
+  border-color: #b54708;
+  color: #fff;
+}
+
+.category-filter__count {
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.7;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .category-filter__item {
+    transition: none;
+  }
+}
