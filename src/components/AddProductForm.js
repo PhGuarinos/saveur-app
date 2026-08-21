@@ -35,8 +35,8 @@ export default function AddProductForm({ onAddProduct, onUpdateProduct, productT
         image: productToEdit.image || ''
       });
     } else {
-      // Sans ce cas, passer de "Modifier" Ã  "Ajouter un produit"
-      // laissait les champs du produit prÃ©cÃ©dent dans le formulaire.
+      // Sans ce cas, passer de "Modifier" à "Ajouter un produit"
+      // laissait les champs du produit précédent dans le formulaire.
       setFormData(EMPTY_FORM);
       setImageFile(null);
     }
@@ -56,7 +56,7 @@ export default function AddProductForm({ onAddProduct, onUpdateProduct, productT
 
     setUploading(true);
     try {
-      // CrÃ©er un nom unique pour l'image
+      // Créer un nom unique pour l'image
       const timestamp = Date.now();
       const filename = `products/${timestamp}_${file.name}`;
 
@@ -64,20 +64,20 @@ export default function AddProductForm({ onAddProduct, onUpdateProduct, productT
       const storageRef = ref(storage, filename);
       await uploadBytes(storageRef, file);
 
-      // RÃ©cupÃ©rer l'URL de tÃ©lÃ©chargement
+      // Récupérer l'URL de téléchargement
       const downloadURL = await getDownloadURL(storageRef);
 
-      // Mettre Ã  jour le formulaire avec l'URL
+      // Mettre à jour le formulaire avec l'URL
       setFormData(prev => ({
         ...prev,
         image: downloadURL
       }));
 
       setImageFile(file);
-      alert('âœ… Image uploadÃ©e avec succÃ¨s !');
+      alert('✅ Image uploadée avec succès !');
     } catch (error) {
       console.error('Erreur upload image:', error);
-      alert('âŒ Erreur lors de l\'upload de l\'image');
+      alert('❌ Erreur lors de l\'upload de l\'image');
     } finally {
       setUploading(false);
     }
@@ -92,7 +92,7 @@ export default function AddProductForm({ onAddProduct, onUpdateProduct, productT
     }
 
     if (!formData.category) {
-      alert('Veuillez choisir une catÃ©gorie');
+      alert('Veuillez choisir une catégorie');
       return;
     }
 
@@ -114,12 +114,12 @@ export default function AddProductForm({ onAddProduct, onUpdateProduct, productT
       return;
     }
 
-    // PG facultatif. StockÃ© en nombre, ou null si non renseignÃ©.
+    // PG facultatif. Stocké en nombre, ou null si non renseigné.
     let pgValue = null;
     if (formData.pg !== '') {
       const parsed = Number(formData.pg);
       if (Number.isNaN(parsed) || parsed < 0 || parsed > 100) {
-        alert('Le taux de PG doit Ãªtre un nombre entre 0 et 100');
+        alert('Le taux de PG doit être un nombre entre 0 et 100');
         return;
       }
       pgValue = parsed;
@@ -158,7 +158,7 @@ export default function AddProductForm({ onAddProduct, onUpdateProduct, productT
             name="name"
             value={formData.name}
             onChange={handleChange}
-            placeholder="Ex: Saveur MystÃ©rieuse"
+            placeholder="Ex: Saveur Mystérieuse"
             required
           />
         </div>
@@ -177,7 +177,7 @@ export default function AddProductForm({ onAddProduct, onUpdateProduct, productT
         </div>
 
         <div className="form-group">
-          <label htmlFor="flavors">Saveurs (sÃ©parÃ©es par des virgules) *</label>
+          <label htmlFor="flavors">Saveurs (séparées par des virgules) *</label>
           <textarea
             id="flavors"
             name="flavors"
@@ -187,11 +187,11 @@ export default function AddProductForm({ onAddProduct, onUpdateProduct, productT
             rows="3"
             required
           />
-          <small>Les caractÃ¨res accentuÃ©s sont supportÃ©s</small>
+          <small>Les caractères accentués sont supportés</small>
         </div>
 
         <div className="form-group">
-          <label htmlFor="category">CatÃ©gorie *</label>
+          <label htmlFor="category">Catégorie *</label>
           <select
             id="category"
             name="category"
@@ -199,7 +199,7 @@ export default function AddProductForm({ onAddProduct, onUpdateProduct, productT
             onChange={handleChange}
             required
           >
-            <option value="">â€” Choisir une catÃ©gorie â€”</option>
+            <option value="">— Choisir une catégorie —</option>
             {CATEGORIES.map(categorie => (
               <option key={categorie.id} value={categorie.id}>
                 {categorie.label}
@@ -207,8 +207,8 @@ export default function AddProductForm({ onAddProduct, onUpdateProduct, productT
             ))}
           </select>
           <small>
-            FruitÃ©e = uniquement des fruits Â· Gourmand = uniquement du gourmand Â·
-            FruitÃ©e Gourmande = un mÃ©lange des deux
+            Fruitée = uniquement des fruits · Gourmand = uniquement du gourmand ·
+            Fruitée Gourmande = un mélange des deux
           </small>
         </div>
 
@@ -226,13 +226,13 @@ export default function AddProductForm({ onAddProduct, onUpdateProduct, productT
             placeholder="Ex: 50"
           />
           <small>
-            Facultatif. Le VG se calcule tout seul â€” ratio PG/VG :{' '}
+            Facultatif. Le VG se calcule tout seul — ratio PG/VG :{' '}
             <strong>{formatPgVg(formData.pg === '' ? null : Number(formData.pg))}</strong>
           </small>
         </div>
 
         <div className="form-group">
-          <label htmlFor="image-file">ðŸ“¸ Choisir une image *</label>
+          <label htmlFor="image-file">📸 Choisir une image *</label>
           <input
             id="image-file"
             type="file"
@@ -240,9 +240,9 @@ export default function AddProductForm({ onAddProduct, onUpdateProduct, productT
             onChange={handleImageSelect}
             disabled={uploading}
           />
-          {uploading && <small>â³ Upload en cours...</small>}
-          {imageFile && <small>âœ… Image sÃ©lectionnÃ©e: {imageFile.name}</small>}
-          {formData.image && !uploading && <small>âœ… Image uploadÃ©e!</small>}
+          {uploading && <small>⏳ Upload en cours...</small>}
+          {imageFile && <small>✅ Image sélectionnée: {imageFile.name}</small>}
+          {formData.image && !uploading && <small>✅ Image uploadée!</small>}
         </div>
 
         <div className="form-buttons">
@@ -251,7 +251,7 @@ export default function AddProductForm({ onAddProduct, onUpdateProduct, productT
             className="confirm-button"
             disabled={uploading}
           >
-            {uploading ? 'â³ Upload...' : (productToEdit ? 'Mettre Ã  jour' : 'Ajouter')}
+            {uploading ? '⏳ Upload...' : (productToEdit ? 'Mettre à jour' : 'Ajouter')}
           </button>
         </div>
       </form>
