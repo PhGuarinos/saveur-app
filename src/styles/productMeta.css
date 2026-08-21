@@ -1,0 +1,48 @@
+/* src/styles/productMeta.css */
+
+.product-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+.product-category {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+/* Chaque catégorie a sa couleur pour être identifiable d'un coup d'oeil
+   dans une liste longue, sans avoir à lire le texte du badge. */
+.product-category--fruitee {
+  background: #fce7f0;
+  color: #a4123f;
+}
+
+.product-category--gourmand {
+  background: #fdf0d5;
+  color: #8a5a12;
+}
+
+/* Le mélange des deux : dégradé des deux teintes ci-dessus. */
+.product-category--fruitee_gourmande {
+  background: linear-gradient(100deg, #fce7f0 0%, #fdf0d5 100%);
+  color: #7a3560;
+}
+
+.product-ratio {
+  display: inline-block;
+  padding: 3px 10px;
+  border: 1px solid #d0d5dd;
+  border-radius: 999px;
+  background: #fff;
+  color: #475467;
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  cursor: help;
+}
