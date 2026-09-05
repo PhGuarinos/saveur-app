@@ -7,6 +7,7 @@ import ProductList from './components/ProductList';
 import AddProductForm from './components/AddProductForm';
 import ImportCSVForm from './components/ImportCSVForm';
 import ImportExportData from './components/ImportExportData';
+import BulkCategorize from './components/BulkCategorize';
 import LoginModal from './components/LoginModal';
 import { normalizeString } from './utils/stringUtils';
 import { TOUS, A_COMPLETER, estACompleter } from './constants/categories';
@@ -27,6 +28,7 @@ function App() {
   const [selectedCategory, setSelectedCategory] = useState(TOUS);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showImportForm, setShowImportForm] = useState(false);
+  const [showBulkForm, setShowBulkForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState(null);
@@ -180,20 +182,54 @@ function App() {
     }
   };
 
+  // Enregistrement en masse des catégories / PG.
+  // On fusionne avec le produit existant : updateProduct réécrit tous les
+  // champs, donc envoyer seulement category et pg effacerait le reste.
+  const handleBulkSave = async (updates) => {
+    const updatedProducts = [...products];
+
+    await Promise.all(updates.map(async (update) => {
+      const index = updatedProducts.findIndex(p => p.id === update.id);
+      if (index === -1) return;
+
+      const merged = {
+        ...updatedProducts[index],
+        category: update.category,
+        pg: update.pg
+      };
+
+      await updateProduct(update.id, merged);
+      updatedProducts[index] = merged;
+    }));
+
+    setProducts(updatedProducts);
+    alert(`${updates.length} produit(s) enregistré(s).`);
+  };
+
   const toggleAddForm = () => {
     setShowAddForm(!showAddForm);
     setEditingProduct(null);
     setShowImportForm(false);
+    setShowBulkForm(false);
   };
 
   const toggleImportForm = () => {
     setShowImportForm(!showImportForm);
     setShowAddForm(false);
+    setShowBulkForm(false);
+  };
+
+  const toggleBulkForm = () => {
+    setShowBulkForm(!showBulkForm);
+    setShowAddForm(false);
+    setShowImportForm(false);
+    setEditingProduct(null);
   };
 
   const handleReturnHome = () => {
     setShowAddForm(false);
     setShowImportForm(false);
+    setShowBulkForm(false);
     setEditingProduct(null);
     setSearchFlavor('');
     setSelectedCategory(TOUS);
@@ -266,6 +302,14 @@ function App() {
             >
               {showImportForm ? 'Annuler' : 'Importer CSV'}
             </button>
+            <button
+              className="bulk-button"
+              onClick={toggleBulkForm}
+              type="button"
+              title="Attribuer les catégories à plusieurs produits d'un coup"
+            >
+              {showBulkForm ? 'Annuler' : 'Catégoriser en masse'}
+            </button>
             {products.length > 0 && (
               <button
                 className="delete-all-button"
@@ -308,12 +352,20 @@ function App() {
         <ImportCSVForm onImportProducts={handleImportProducts} />
       )}
 
+      {userRole === 'admin' && showBulkForm && (
+        <BulkCategorize
+          products={products}
+          onSaveAll={handleBulkSave}
+        />
+      )}
+
       {/* LISTE PRODUITS VISIBLE POUR TOUS */}
       <ProductList
         products={filteredProducts}
         onDeleteProduct={userRole === 'admin' ? handleDeleteProduct : null}
         onEditProduct={userRole === 'admin' ? handleEditProduct : null}
         searchTerm={searchFlavor}
+        isCategoryFiltered={selectedCategory !== TOUS}
       />
     </div>
   );
