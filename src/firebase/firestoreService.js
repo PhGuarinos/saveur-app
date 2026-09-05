@@ -11,6 +11,23 @@ import { db } from './config';
 
 const PRODUCTS_COLLECTION = 'products';
 
+// Construit l'objet envoyé à Firestore à partir d'un produit.
+// Centralisé ici : ajouter un champ au catalogue ne demandera plus
+// que de modifier cette seule fonction, au lieu de trois.
+const toFirestoreProduct = (product) => ({
+  name: product.name,
+  manufacturer: product.manufacturer,
+  flavors: product.flavors || [],
+  // category et pg valent null tant qu'ils ne sont pas renseignés.
+  // Attention : pg peut légitimement valoir 0 (100% VG), donc on teste
+  // explicitement null/undefined plutôt que d'utiliser ||.
+  category: product.category || null,
+  pg: product.pg === null || product.pg === undefined || product.pg === ''
+    ? null
+    : Number(product.pg),
+  image: product.image || '/images/placeholder.jpg'
+});
+
 export const getProducts = async () => {
   try {
     const querySnapshot = await getDocs(collection(db, PRODUCTS_COLLECTION));
@@ -30,16 +47,16 @@ export const getProducts = async () => {
 
 export const addProduct = async (product) => {
   try {
+    const data = toFirestoreProduct(product);
     const docRef = await addDoc(collection(db, PRODUCTS_COLLECTION), {
-      name: product.name,
-      manufacturer: product.manufacturer,
-      flavors: product.flavors || [],
-      image: product.image || '/images/placeholder.jpg',
+      ...data,
       createdAt: new Date()
     });
+    // On renvoie les données réellement écrites, pas le produit d'origine :
+    // sinon l'affichage pouvait montrer autre chose que ce qui est en base.
     return {
       id: docRef.id,
-      ...product
+      ...data
     };
   } catch (error) {
     console.error('Erreur lors de l\'ajout du produit:', error);
@@ -52,10 +69,7 @@ export const updateProduct = async (productId, updatedProduct) => {
     const id = String(productId);
     const productRef = doc(db, PRODUCTS_COLLECTION, id);
     await updateDoc(productRef, {
-      name: updatedProduct.name,
-      manufacturer: updatedProduct.manufacturer,
-      flavors: updatedProduct.flavors || [],
-      image: updatedProduct.image || '/images/placeholder.jpg',
+      ...toFirestoreProduct(updatedProduct),
       updatedAt: new Date()
     });
     return updatedProduct;
@@ -97,21 +111,15 @@ export const migrateFromLocalStorage = async () => {
       alert('Aucune donnée trouvée dans le localStorage');
       return 0;
     }
-
     const products = JSON.parse(localData);
     let count = 0;
-
     for (const product of products) {
       await addDoc(collection(db, PRODUCTS_COLLECTION), {
-        name: product.name,
-        manufacturer: product.manufacturer,
-        flavors: product.flavors || [],
-        image: product.image || '/images/placeholder.jpg',
+        ...toFirestoreProduct(product),
         createdAt: new Date()
       });
       count++;
     }
-
     return count;
   } catch (error) {
     console.error('Erreur lors de la migration:', error);
