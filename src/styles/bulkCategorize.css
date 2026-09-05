@@ -1,0 +1,138 @@
+/* src/styles/bulkCategorize.css */
+
+.bulk-categorize {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 16px 0;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.1);
+}
+
+.bulk-categorize__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.bulk-categorize__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.bulk-categorize__status {
+  font-size: 0.85rem;
+  color: #475467;
+}
+
+.bulk-categorize__empty {
+  padding: 24px;
+  text-align: center;
+  color: #475467;
+}
+
+.bulk-categorize__table {
+  border: 1px solid #eaecf0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.bulk-categorize__head,
+.bulk-categorize__row {
+  display: grid;
+  grid-template-columns: 1.4fr 2fr 1.2fr 80px;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 12px;
+}
+
+.bulk-categorize__head {
+  background: #f9fafb;
+  border-bottom: 1px solid #eaecf0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #667085;
+}
+
+.bulk-categorize__row {
+  border-bottom: 1px solid #f2f4f7;
+}
+
+.bulk-categorize__row:last-child {
+  border-bottom: none;
+}
+
+.bulk-categorize__row:hover {
+  background: #fcfcfd;
+}
+
+/* Repère visuel des lignes touchées mais pas encore enregistrées. */
+.bulk-categorize__row--modified {
+  background: #fffaeb;
+}
+
+.bulk-categorize__row--modified:hover {
+  background: #fef7e0;
+}
+
+.bulk-categorize__name {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+
+.bulk-categorize__name small {
+  color: #667085;
+  font-size: 0.78rem;
+}
+
+.bulk-categorize__flavors {
+  font-size: 0.85rem;
+  color: #475467;
+}
+
+.bulk-categorize__row select,
+.bulk-categorize__row input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.88rem;
+  background: #fff;
+}
+
+.bulk-categorize__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.bulk-categorize__actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Sur petit écran, la grille passe en deux colonnes pour rester lisible. */
+@media (max-width: 720px) {
+  .bulk-categorize__head {
+    display: none;
+  }
+
+  .bulk-categorize__row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .bulk-categorize__name,
+  .bulk-categorize__flavors {
+    grid-column: 1 / -1;
+  }
+}
