@@ -8,9 +8,9 @@
 // Les identifiants stockés en base sont sans accent ni espace.
 // Les accents restent uniquement à l'affichage (label).
 export const CATEGORIES = [
-  { id: 'fruitee', label: 'Fruitée' },
-  { id: 'gourmand', label: 'Gourmand' },
-  { id: 'fruitee_gourmande', label: 'Fruitée Gourmande' },
+  { id: 'fruitee', label: 'Fruités' },
+  { id: 'gourmand', label: 'Gourmands' },
+  { id: 'fruitee_gourmande', label: 'Fruités Gourmands' },
 ];
 
 // Valeurs spéciales du filtre (jamais stockées en base)
